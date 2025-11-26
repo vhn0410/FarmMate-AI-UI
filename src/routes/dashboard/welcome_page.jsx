@@ -1,5 +1,10 @@
 import { useState } from "react";
 import { InputBar } from "../../components/dashboard/InputBar";
+import { useNavigate } from "react-router-dom";
+import { useKeycloak } from "../../contexts/KeycloakProvider";
+import { threadApi } from "../../services/threadAPI";
+import { THREAD_EVENTS, emitThreadEvent } from "../../utils/events";
+import { generateThreadTitle } from "../../utils/threadHelpers"; 
 
 // Tự động đổi greeting theo thời gian
 const getGreeting = () => {
@@ -10,13 +15,43 @@ const getGreeting = () => {
 };
 
 const WelcomePage = () => {
+    const navigate = useNavigate();
+    const keycloak = useKeycloak();
+    const userId = keycloak.tokenParsed?.sub || "demo-user";
     const [currentMessage, setCurrentMessage] = useState("");
-    const [checkpointId, setCheckpointId] = useState(null);
+    const [isCreating, setIsCreating] = useState(false); // 🔥 Loading state
+    
+    const username = keycloak.tokenParsed?.preferred_username || "User";
 
-    const username = "Nguyen Hoang Vu"; // bạn có thể lấy từ API auth
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!currentMessage.trim() || isCreating) return;
 
-    const handleSubmit = async () => {
-        console.log("Submit message:", currentMessage);
+        try {
+            setIsCreating(true);
+            
+            // 🔥 Tạo title thông minh từ message đầu tiên
+            const threadTitle = generateThreadTitle(currentMessage, 50);
+            
+            // 1. Tạo thread mới với title từ message
+            const newThread = await threadApi.createThread(userId, threadTitle);
+            
+            // 2. 🔥 EMIT EVENT để Sidebar cập nhật
+            emitThreadEvent(THREAD_EVENTS.CREATED, newThread);
+            
+            // 3. Chuyển trang VÀ truyền message qua state
+            navigate(`/chat/${newThread.thread_id}`, { 
+                state: { initialMessage: currentMessage },
+                replace: true 
+            });
+            
+            setCurrentMessage(""); // Clear input
+        } catch (error) {
+            console.error("Failed to create thread:", error);
+            alert("Không thể tạo cuộc hội thoại mới!");
+        } finally {
+            setIsCreating(false);
+        }
     };
 
     return (
@@ -38,7 +73,15 @@ const WelcomePage = () => {
                     currentMessage={currentMessage}
                     setCurrentMessage={setCurrentMessage}
                     onSubmit={handleSubmit}
+                    disabled={isCreating}
                 />
+                
+                {/* Loading indicator */}
+                {isCreating && (
+                    <div className="text-center mt-2 text-sm text-gray-500">
+                        Đang tạo cuộc hội thoại mới...
+                    </div>
+                )}
             </div>
 
             {/* Footer */}

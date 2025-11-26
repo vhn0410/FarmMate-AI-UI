@@ -42,8 +42,7 @@ export const Header = ({ collapsed = false, setCollapsed = () => {} }) => {
           </button>
         </div>
         
-        <div className="flex items-center gap-x-3">
-          {/* User Profile */}
+        {/* <div className="flex items-center gap-x-3">
           <div className="flex items-center gap-x-3">
             <p className="text-sm font-medium text-slate-900 dark:text-slate-50">
               {keycloak.tokenParsed?.preferred_username}
@@ -55,11 +54,12 @@ export const Header = ({ collapsed = false, setCollapsed = () => {} }) => {
               {keycloak.tokenParsed?.preferred_username?.charAt(0).toUpperCase() || "U"}
             </button>
           </div>
-        </div>
+        </div> */}
+
       </header>
 
       {/* Logout Modal */}
-      {showLogoutModal && (
+      {/* {showLogoutModal && (
         <>
           <div
             className="fixed inset-0 z-40 bg-black bg-opacity-50 backdrop-blur-sm"
@@ -74,7 +74,7 @@ export const Header = ({ collapsed = false, setCollapsed = () => {} }) => {
             </button>
           </div>
         </>
-      )}
+      )} */}
     </>
   );
 };

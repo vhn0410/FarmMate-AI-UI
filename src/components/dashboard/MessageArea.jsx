@@ -104,10 +104,10 @@ const SearchStages = ({ searchInfo }) => {
             )}
 
             {searchInfo.stages.includes("writing") && (
-                <div className="flex items-start space-x-3 p-3 bg-green-50 border border-green-200 rounded-lg animate-fadeIn">
-                    <Edit3 className="w-4 h-4 text-green-600 mt-0.5 animate-pulse" />
+                <div className="flex items-start space-x-3 p-3 bg-blue-50 border border-blue-200 rounded-lg animate-fadeIn">
+                    <Edit3 className="w-4 h-4 text-blue-600 mt-0.5 animate-pulse" />
                     <div className="flex-1">
-                        <p className="text-sm font-semibold text-green-900">Đang viết câu trả lời</p>
+                        <p className="text-sm font-semibold text-blue-900">Đang viết câu trả lời</p>
                     </div>
                 </div>
             )}
