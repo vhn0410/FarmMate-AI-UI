@@ -1,8 +1,8 @@
+// src/App.jsx
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ThemeProvider } from "./contexts/theme-context";
 import Layout from "./routes/layout";
 import DashboardPage from "./routes/dashboard/page";
-import { useEffect } from "react";
 import { KeycloakProvider } from "./contexts/KeycloakProvider";
 import Login from "./routes/login";
 import Logout from "./routes/logout";
@@ -32,14 +32,15 @@ function App() {
         },
     ]);
 
-    useEffect(() => {
-        const queryParams = new URLSearchParams(window.location.search);
-        const error = queryParams.get("error");
-        if (error === "no-access") {
-            alert("You do not have permission to log in to this system.");
-            window.location.href = "/login";
-        }
-    }, []);
+    // 🔥 REMOVE this useEffect - causes issues
+    // useEffect(() => {
+    //     const queryParams = new URLSearchParams(window.location.search);
+    //     const error = queryParams.get("error");
+    //     if (error === "no-access") {
+    //         alert("You do not have permission to log in to this system.");
+    //         window.location.href = "/login";
+    //     }
+    // }, []);
 
     return (
         <KeycloakProvider>

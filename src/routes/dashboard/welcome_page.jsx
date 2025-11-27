@@ -1,3 +1,4 @@
+// src/routes/dashboard/welcome_page.jsx
 import { useState } from "react";
 import { InputBar } from "../../components/dashboard/InputBar";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +7,6 @@ import { threadApi } from "../../services/threadAPI";
 import { THREAD_EVENTS, emitThreadEvent } from "../../utils/events";
 import { generateThreadTitle } from "../../utils/threadHelpers"; 
 
-// Tự động đổi greeting theo thời gian
 const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -19,7 +19,7 @@ const WelcomePage = () => {
     const keycloak = useKeycloak();
     const userId = keycloak.tokenParsed?.sub || "demo-user";
     const [currentMessage, setCurrentMessage] = useState("");
-    const [isCreating, setIsCreating] = useState(false); // 🔥 Loading state
+    const [isCreating, setIsCreating] = useState(false);
     
     const username = keycloak.tokenParsed?.preferred_username || "User";
 
@@ -30,25 +30,35 @@ const WelcomePage = () => {
         try {
             setIsCreating(true);
             
-            // 🔥 Tạo title thông minh từ message đầu tiên
+            // 🔥 Ensure token is valid before creating thread
+            await keycloak.updateToken(30);
+            
             const threadTitle = generateThreadTitle(currentMessage, 50);
             
-            // 1. Tạo thread mới với title từ message
+            // Tạo thread mới
             const newThread = await threadApi.createThread(userId, threadTitle);
             
-            // 2. 🔥 EMIT EVENT để Sidebar cập nhật
+            // EMIT EVENT để Sidebar cập nhật
             emitThreadEvent(THREAD_EVENTS.CREATED, newThread);
             
-            // 3. Chuyển trang VÀ truyền message qua state
+            // Chuyển trang và truyền message
             navigate(`/chat/${newThread.thread_id}`, { 
                 state: { initialMessage: currentMessage },
                 replace: true 
             });
             
-            setCurrentMessage(""); // Clear input
+            setCurrentMessage("");
         } catch (error) {
             console.error("Failed to create thread:", error);
-            alert("Không thể tạo cuộc hội thoại mới!");
+            
+            // 🔥 Handle 401 - redirect to login
+            if (error.response?.status === 401) {
+                console.log("Token expired, redirecting to login...");
+                keycloak.login();
+                return;
+            }
+            
+            alert("Không thể tạo cuộc hội thoại mới! Vui lòng thử lại.");
         } finally {
             setIsCreating(false);
         }
@@ -61,13 +71,12 @@ const WelcomePage = () => {
                 <h1 className="text-4xl font-semibold mb-2">
                     {getGreeting()}, <span className="text-gray-800">{username}</span>
                 </h1>
-
                 <p className="text-gray-600 text-base">
                     How can I assist you today?
                 </p>
             </div>
 
-            {/* Input Bar fixed at center như ChatGPT */}
+            {/* Input Bar */}
             <div className="w-full max-w-3xl">
                 <InputBar
                     currentMessage={currentMessage}

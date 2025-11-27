@@ -1,72 +1,65 @@
-// src/services/threadApi.js
-
-const API_BASE = "http://127.0.0.1:8000";
+// src/services/threadAPI.jsx
+import apiClient from './api-client';
 
 export const threadApi = {
     /**
      * Tạo thread mới
      */
     async createThread(userId, title = "Cuộc hội thoại mới") {
-        const response = await fetch(`${API_BASE}/threads`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user_id: userId, title })
+        const response = await apiClient.post('/threads', {
+            user_id: userId,
+            title
         });
-        
-        if (!response.ok) throw new Error("Failed to create thread");
-        return response.json();
+        return response.data;
     },
 
     /**
      * Lấy danh sách threads của user
      */
     async getUserThreads(userId) {
-        const response = await fetch(`${API_BASE}/threads?user_id=${userId}`);
-        if (!response.ok) throw new Error("Failed to fetch threads");
-        return response.json();
+        const response = await apiClient.get('/threads', {
+            params: { user_id: userId }
+        });
+        return response.data;
     },
 
     /**
      * Lấy chi tiết 1 thread
      */
     async getThread(threadId, userId) {
-        const response = await fetch(`${API_BASE}/threads/${threadId}?user_id=${userId}`);
-        if (!response.ok) throw new Error("Thread not found");
-        return response.json();
+        const response = await apiClient.get(`/threads/${threadId}`, {
+            params: { user_id: userId }
+        });
+        return response.data;
     },
 
     /**
      * Lấy tin nhắn của thread
      */
     async getThreadMessages(threadId, userId) {
-        const response = await fetch(`${API_BASE}/threads/${threadId}/messages?user_id=${userId}`);
-        if (!response.ok) throw new Error("Failed to fetch messages");
-        return response.json();
+        const response = await apiClient.get(`/threads/${threadId}/messages`, {
+            params: { user_id: userId }
+        });
+        return response.data;
     },
 
     /**
      * Cập nhật thread (đổi title)
      */
     async updateThread(threadId, userId, updates) {
-        const response = await fetch(`${API_BASE}/threads/${threadId}?user_id=${userId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updates)
+        const response = await apiClient.patch(`/threads/${threadId}`, updates, {
+            params: { user_id: userId }
         });
-        
-        if (!response.ok) throw new Error("Failed to update thread");
-        return response.json();
+        return response.data;
     },
 
     /**
      * Xóa thread
      */
     async deleteThread(threadId, userId) {
-        const response = await fetch(`${API_BASE}/threads/${threadId}?user_id=${userId}`, {
-            method: "DELETE"
+        const response = await apiClient.delete(`/threads/${threadId}`, {
+            params: { user_id: userId }
         });
-        
-        if (!response.ok) throw new Error("Failed to delete thread");
-        return response.json();
+        return response.data;
     }
 };
